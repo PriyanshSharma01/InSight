@@ -28,14 +28,14 @@
                 android:id="@+id/main_tab"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar"></com.google.android.material.tabs.TabLayout>
+                android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/tabPager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"></androidx.viewpager.widget.ViewPager>
+            android:layout_height="match_parent" />
 
 
     </LinearLayout>

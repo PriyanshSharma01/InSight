@@ -69,29 +69,28 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class TextFragment extends Fragment {
+public class ExploreFragment extends Fragment {
 
     private final int REQUEST_CODE_PERMISSIONS = 1001;
     private final int REQ_CODE = 100;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
     private final Executor executor = Executors.newSingleThreadExecutor();
+    private final String fragName;
+    LayoutInflater inflater;
+    View v;
+    ImageView cancel, btSpeak, btPause;
+    EditText etText;
     private PreviewView mPreviewView;
     private ImageView captureImage, captureImage1, captureImage2;
     private ImageView previewImage;
     private CardView capture1, capture2;
-    private final String fragName;
     private String imageURL;
     private ProgressBar progressBar;
     private TextToSpeech textToSpeech;
     private ImageView assistant;
     private TextView textViewResults;
 
-    LayoutInflater inflater;
-    View v;
-    ImageView cancel, btSpeak, btPause;
-    EditText etText;
-
-    public TextFragment(String fragName) {
+    public ExploreFragment(String fragName) {
         this.fragName = fragName;
         // Required empty public constructor
     }
@@ -196,10 +195,10 @@ public class TextFragment extends Fragment {
         }
     }
 
-    private boolean allPermissionsGranted(){
+    private boolean allPermissionsGranted() {
 
-        for(String permission : REQUIRED_PERMISSIONS){
-            if(ContextCompat.checkSelfPermission(getActivity(), permission) != PackageManager.PERMISSION_GRANTED){
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(getActivity(), permission) != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
         }
@@ -209,10 +208,10 @@ public class TextFragment extends Fragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
-        if(requestCode == REQUEST_CODE_PERMISSIONS){
-            if(allPermissionsGranted()){
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
                 startCamera();
-            } else{
+            } else {
                 Toast.makeText(getContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
                 getActivity().finish();
             }
@@ -267,8 +266,7 @@ public class TextFragment extends Fragment {
                 .build();
         preview.setSurfaceProvider(mPreviewView.getSurfaceProvider());
         cameraProvider.unbindAll();
-        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview, imageAnalysis, imageCapture);
-
+        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageAnalysis, imageCapture);
 
 
         captureImage.setOnClickListener(new View.OnClickListener() {
@@ -283,7 +281,7 @@ public class TextFragment extends Fragment {
                 progressBar.setVisibility(View.VISIBLE);
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
-                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
+                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
 
                 photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -294,11 +292,11 @@ public class TextFragment extends Fragment {
                                 imageURL = uri.toString();
                                 Log.d("IMAGE_URL", imageURL);
 
-                                if(fragName == "Read") {
+                                if (fragName == "Read") {
                                     textRecognition(imageURL);
-                                }else if(fragName == "Explore") {
+                                } else if (fragName == "Explore") {
                                     objectDetection(imageURL);
-                                }else {
+                                } else {
                                     faceDetection(imageURL);
                                 }
                                 //Toast.makeText(getContext(), imageURL, Toast.LENGTH_SHORT).show();
@@ -366,11 +364,11 @@ public class TextFragment extends Fragment {
             public void onClick(View v) {
 
                 SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date())+ ".jpg");
+                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date()) + ".jpg");
 
                 Toast.makeText(getContext(), "Capture successfully", Toast.LENGTH_SHORT).show();
                 ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback () {
+                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback() {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         getActivity().runOnUiThread(new Runnable() {
@@ -379,7 +377,7 @@ public class TextFragment extends Fragment {
                                 FirebaseApp.initializeApp(getContext());
                                 Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
                                 FirebaseStorage storage = FirebaseStorage.getInstance();
-                                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
+                                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
 
 
                                 photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -394,9 +392,9 @@ public class TextFragment extends Fragment {
                                     }
                                 });
 
-                                if(fragName == "Explore") {
+                                if (fragName == "Explore") {
                                     sceneDescription(imageURL);
-                                }else {
+                                } else {
                                     colorDetection(imageURL);
                                 }
 
@@ -430,6 +428,7 @@ public class TextFragment extends Fragment {
                             }
                         });
                     }
+
                     @Override
                     public void onError(@NonNull ImageCaptureException error) {
                         error.printStackTrace();
@@ -443,11 +442,11 @@ public class TextFragment extends Fragment {
             public void onClick(View v) {
 
                 SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date())+ ".jpg");
+                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date()) + ".jpg");
 
                 Toast.makeText(getContext(), "Capture successfully", Toast.LENGTH_SHORT).show();
                 ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback () {
+                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback() {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         getActivity().runOnUiThread(new Runnable() {
@@ -455,7 +454,7 @@ public class TextFragment extends Fragment {
 
                                 Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
                                 FirebaseStorage storage = FirebaseStorage.getInstance();
-                                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
+                                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
 
 
                                 photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -502,6 +501,7 @@ public class TextFragment extends Fragment {
                             }
                         });
                     }
+
                     @Override
                     public void onError(@NonNull ImageCaptureException error) {
                         error.printStackTrace();
@@ -526,8 +526,8 @@ public class TextFragment extends Fragment {
 
             @Override
             public void run() {
-                try  {
-                    String content =  "{\r\"url\":\""+imageU+"\"\r}";
+                try {
+                    String content = "{\r\"url\":\"" + imageU + "\"\r}";
 
                     OkHttpClient client = new OkHttpClient();
 
@@ -550,14 +550,14 @@ public class TextFragment extends Fragment {
 
                     String resp = "Age: ";
 
-                    for(int i=0; i<jj.length();i++) {
+                    for (int i = 0; i < jj.length(); i++) {
                         JSONObject jsonObject = jj.getJSONObject(i);
                         JSONObject jsonObj = jsonObject.getJSONObject("faceAttributes");
 
-                        resp = resp + jsonObj.get("age") + ", Gender: "+jsonObj.get("gender");
+                        resp = resp + jsonObj.get("age") + ", Gender: " + jsonObj.get("gender");
                     }
 
-                    if(resp.equals("")||resp.equals("Age: ")) {
+                    if (resp.equals("") || resp.equals("Age: ")) {
                         resp = "No Face detected";
                     }
 
@@ -591,8 +591,8 @@ public class TextFragment extends Fragment {
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    if(!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH,null);
+                                    if (!etText.getText().equals("")) {
+                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
                                     }
                                 }
                             });
@@ -600,7 +600,7 @@ public class TextFragment extends Fragment {
                             btPause.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    if(!etText.getText().equals("") && textToSpeech.isSpeaking()) {
+                                    if (!etText.getText().equals("") && textToSpeech.isSpeaking()) {
                                         textToSpeech.stop();
                                     }
                                 }
@@ -638,9 +638,9 @@ public class TextFragment extends Fragment {
 
             @Override
             public void run() {
-                try  {
+                try {
 
-                    String content =  "{\r\"url\":\""+imageU+"\"\r}";
+                    String content = "{\r\"url\":\"" + imageU + "\"\r}";
 
                     OkHttpClient client = new OkHttpClient();
 
@@ -664,15 +664,15 @@ public class TextFragment extends Fragment {
 
                     String resp = "Text Detected: ";
 
-                    for(int i=0; i<jsonRegions.length();i++) {
+                    for (int i = 0; i < jsonRegions.length(); i++) {
                         JSONObject jsonObject = jsonRegions.getJSONObject(i);
                         JSONArray jsonLines = (JSONArray) jsonObject.get("lines");
 
-                        for (int j=0; j<jsonLines.length();j++){
+                        for (int j = 0; j < jsonLines.length(); j++) {
                             JSONObject jsonLineObject = jsonLines.getJSONObject(j);
                             JSONArray jsonWords = (JSONArray) jsonLineObject.get("words");
 
-                            for(int k=0; k<jsonWords.length();k++) {
+                            for (int k = 0; k < jsonWords.length(); k++) {
                                 JSONObject jsonWordObject = jsonWords.getJSONObject(k);
                                 resp = resp + jsonWordObject.get("text") + " ";
                             }
@@ -710,8 +710,8 @@ public class TextFragment extends Fragment {
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    if(!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH,null);
+                                    if (!etText.getText().equals("")) {
+                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
                                     }
                                 }
                             });
@@ -719,7 +719,7 @@ public class TextFragment extends Fragment {
                             btPause.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    if(!etText.getText().equals("") && textToSpeech.isSpeaking()) {
+                                    if (!etText.getText().equals("") && textToSpeech.isSpeaking()) {
                                         textToSpeech.stop();
                                     }
                                 }
@@ -748,8 +748,8 @@ public class TextFragment extends Fragment {
     }
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {
-        Bitmap OutImage = Bitmap.createScaledBitmap(inImage, 800, 800,false);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), OutImage, "Title"+new Random().nextInt(), null);
+        Bitmap OutImage = Bitmap.createScaledBitmap(inImage, 800, 800, false);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), OutImage, "Title" + new Random().nextInt(), null);
         return Uri.parse(path);
     }
 
