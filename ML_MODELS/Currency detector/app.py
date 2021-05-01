@@ -48,7 +48,7 @@ def upload_image():
     filename = now.strftime("%Y%m%d_%H%M%S") + "_" + str(randint(000, 999))
     file.save(os.path.join(uploads_dir, secure_filename(filename + '.jpg')))
     image = cv2.imread(uploads_dir + '/' + filename + '.jpg')
-    img = cv2.cvtColor(image, cv2.COLOR.BGR2RGB)
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     img = Image.fromarray(img)
     img = transform(img)
     img = img.unsqueeze(0)
