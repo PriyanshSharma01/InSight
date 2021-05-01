@@ -308,76 +308,29 @@ public class RecognisationFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date()) + ".jpg");
 
-                Toast.makeText(getContext(), "Capture successfully", Toast.LENGTH_SHORT).show();
-                ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback() {
+                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
+                previewImage.setVisibility(View.VISIBLE);
+                mPreviewView.setVisibility(View.GONE);
+                previewImage.setImageBitmap(mPreviewView.getBitmap());
+                captureImage.setEnabled(false);
+                progressBar.setVisibility(View.VISIBLE);
+
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
+
+                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                imageURL = uri.toString();
+                                Log.d("IMAGE_URL", imageURL.toString());
+                                colorDetection(imageURL);
 
-                                FirebaseApp.initializeApp(getContext());
-                                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
-                                FirebaseStorage storage = FirebaseStorage.getInstance();
-                                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
-
-
-                                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                            @Override
-                                            public void onSuccess(Uri uri) {
-                                                imageURL = uri.toString();
-                                            }
-                                        });
-                                    }
-                                });
-
-                                if (fragName != "Explore") {
-                                    colorDetection(imageURL);
-                                }
-
-                                LayoutInflater inflater = (getActivity()).getLayoutInflater();
-                                View v = inflater.inflate(R.layout.diolag_layout, null);
-                                ImageView cancel = v.findViewById(R.id.imageView4);
-                                //get the spinner from the xml.
-                                Spinner dropdown = v.findViewById(R.id.spinner);
-                                String[] items = new String[]{"Select Language", "English", "Hindi"};
-                                ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                                dropdown.setAdapter(adapter);
-
-                                previewImage.setVisibility(View.VISIBLE);
-                                mPreviewView.setVisibility(View.GONE);
-                                previewImage.setImageBitmap(mPreviewView.getBitmap());
-                                captureImage.setEnabled(false);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                                alertDialog.setCancelable(false);
-                                alertDialog.setView(v);
-                                alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-                                alertDialog.getWindow().setBackgroundDrawable(null);
-                                alertDialog.getWindow().setGravity(Gravity.BOTTOM);
-                                alertDialog.show();
-
-                                cancel.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        alertDialog.dismiss();
-                                        captureImage.setEnabled(true);
-                                        previewImage.setVisibility(View.GONE);
-                                        mPreviewView.setVisibility(View.VISIBLE);
-                                    }
-                                });
                             }
                         });
-                    }
-
-                    @Override
-                    public void onError(@NonNull ImageCaptureException error) {
-                        error.printStackTrace();
                     }
                 });
             }
@@ -387,73 +340,27 @@ public class RecognisationFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date()) + ".jpg");
+                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
+                previewImage.setVisibility(View.VISIBLE);
+                mPreviewView.setVisibility(View.GONE);
+                previewImage.setImageBitmap(mPreviewView.getBitmap());
+                captureImage.setEnabled(false);
+                progressBar.setVisibility(View.VISIBLE);
 
-                Toast.makeText(getContext(), "Capture successfully", Toast.LENGTH_SHORT).show();
-                ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback() {
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
+
+                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
-
-                                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
-                                FirebaseStorage storage = FirebaseStorage.getInstance();
-                                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
-
-
-                                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                            @Override
-                                            public void onSuccess(Uri uri) {
-                                                imageURL = uri.toString();
-                                            }
-                                        });
-                                    }
-                                });
-
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                imageURL = uri.toString();
+                                Log.d("IMAGE_URL", imageURL.toString());
                                 currencyDetection(imageURL);
-
-                                LayoutInflater inflater = (getActivity()).getLayoutInflater();
-                                View v = inflater.inflate(R.layout.diolag_layout, null);
-                                ImageView cancel = v.findViewById(R.id.imageView4);
-                                //get the spinner from the xml.
-                                Spinner dropdown = v.findViewById(R.id.spinner);
-                                String[] items = new String[]{"Select Language", "English", "Hindi"};
-                                ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                                dropdown.setAdapter(adapter);
-
-                                previewImage.setVisibility(View.VISIBLE);
-                                mPreviewView.setVisibility(View.GONE);
-                                previewImage.setImageBitmap(mPreviewView.getBitmap());
-                                captureImage.setEnabled(false);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                                alertDialog.setCancelable(false);
-                                alertDialog.setView(v);
-                                alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-                                alertDialog.getWindow().setBackgroundDrawable(null);
-                                alertDialog.getWindow().setGravity(Gravity.BOTTOM);
-                                alertDialog.show();
-
-                                cancel.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        alertDialog.dismiss();
-                                        captureImage.setEnabled(true);
-                                        previewImage.setVisibility(View.GONE);
-                                        mPreviewView.setVisibility(View.VISIBLE);
-                                    }
-                                });
                             }
                         });
-                    }
-
-                    @Override
-                    public void onError(@NonNull ImageCaptureException error) {
-                        error.printStackTrace();
                     }
                 });
             }
