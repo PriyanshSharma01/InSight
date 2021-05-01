@@ -12,6 +12,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
+import android.text.InputType;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -51,6 +53,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -60,6 +65,12 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class ExploreFragment extends Fragment {
 
@@ -271,7 +282,7 @@ public class ExploreFragment extends Fragment {
                 progressBar.setVisibility(View.VISIBLE);
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
-                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
+                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
 
                 photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -280,145 +291,40 @@ public class ExploreFragment extends Fragment {
                             @Override
                             public void onSuccess(Uri uri) {
                                 imageURL = uri.toString();
-                                Log.d("IMAGE_URL", imageURL);
+                                Log.d("IMAGE_URL", imageURL.toString());
+                                objectDetection(imageURL);
 
-                                if (fragName == "Explore") {
-                                    objectDetection(imageURL);
-                                }
-                                //Toast.makeText(getContext(), imageURL, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
                 });
-                /*SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date())+ ".jpg");
-
-                Toast.makeText(getContext(), "Capture successfully", Toast.LENGTH_SHORT).show();
-                ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback () {
-                    @Override
-                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
-
-                                //get the spinner from the xml.
-                                Spinner dropdown = v.findViewById(R.id.spinner);
-                                String[] items = new String[]{"Select Language", "English", "Hindi"};
-                                ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                                dropdown.setAdapter(adapter);
-
-                                previewImage.setVisibility(View.VISIBLE);
-                                mPreviewView.setVisibility(View.GONE);
-                                previewImage.setImageBitmap(mPreviewView.getBitmap());
-                                captureImage.setEnabled(false);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                        .setCancelable(false)
-                                        .setView(v).show();
-
-                                if(fragName == "Read") {
-                                    textRecognition(imageURL);
-                                }else if(fragName == "Explore") {
-                                    objectDetection(imageURL);
-                                }else {
-                                    faceDetection(imageURL);
-                                }
-
-
-
-                                cancel.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        alertDialog.dismiss();
-                                        captureImage.setEnabled(true);
-                                        previewImage.setVisibility(View.GONE);
-                                        mPreviewView.setVisibility(View.VISIBLE);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                    @Override
-                    public void onError(@NonNull ImageCaptureException error) {
-                        error.printStackTrace();
-                    }
-                });*/
             }
         });
 
         captureImage1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
+                previewImage.setVisibility(View.VISIBLE);
+                mPreviewView.setVisibility(View.GONE);
+                previewImage.setImageBitmap(mPreviewView.getBitmap());
+                captureImage.setEnabled(false);
+                progressBar.setVisibility(View.VISIBLE);
 
-                SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date()) + ".jpg");
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
 
-                Toast.makeText(getContext(), "Capture successfully", Toast.LENGTH_SHORT).show();
-                ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback() {
+                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
-
-                                FirebaseApp.initializeApp(getContext());
-                                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
-                                FirebaseStorage storage = FirebaseStorage.getInstance();
-                                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
-
-
-                                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                            @Override
-                                            public void onSuccess(Uri uri) {
-                                                imageURL = uri.toString();
-                                            }
-                                        });
-                                    }
-                                });
-
-                                if (fragName == "Explore") {
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                imageURL = uri.toString();
+                                Log.d("IMAGE_URL", imageURL.toString());
                                     sceneDescription(imageURL);
-                                }
-
-                                LayoutInflater inflater = (getActivity()).getLayoutInflater();
-                                View v = inflater.inflate(R.layout.diolag_layout, null);
-                                ImageView cancel = v.findViewById(R.id.imageView4);
-                                //get the spinner from the xml.
-                                Spinner dropdown = v.findViewById(R.id.spinner);
-                                String[] items = new String[]{"Select Language", "English", "Hindi"};
-                                ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                                dropdown.setAdapter(adapter);
-
-                                previewImage.setVisibility(View.VISIBLE);
-                                mPreviewView.setVisibility(View.GONE);
-                                previewImage.setImageBitmap(mPreviewView.getBitmap());
-                                captureImage.setEnabled(false);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                                alertDialog.setCancelable(false);
-                                alertDialog.setView(v);
-                                alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-                                alertDialog.getWindow().setBackgroundDrawable(null);
-                                alertDialog.getWindow().setGravity(Gravity.BOTTOM);
-                                alertDialog.show();
-
-                                cancel.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        alertDialog.dismiss();
-                                        captureImage.setEnabled(true);
-                                        previewImage.setVisibility(View.GONE);
-                                        mPreviewView.setVisibility(View.VISIBLE);
-                                    }
-                                });
                             }
                         });
-                    }
-
-                    @Override
-                    public void onError(@NonNull ImageCaptureException error) {
-                        error.printStackTrace();
                     }
                 });
             }
@@ -427,9 +333,221 @@ public class ExploreFragment extends Fragment {
     }
 
     private void sceneDescription(String imageURL) {
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    //Your code goes here
+
+                    String content =  "{\r\"url\":\""+imageURL+"\"\r}";
+
+                    OkHttpClient client = new OkHttpClient();
+
+                    MediaType mediaType = MediaType.parse("application/json");
+                    RequestBody body = RequestBody.create(mediaType, content);
+
+                    Request request = new Request.Builder()
+                            .url("https://microsoft-computer-vision3.p.rapidapi.com/describe?language=en&maxCandidates=1&descriptionExclude=Celebrities")
+                            .post(body)
+                            .addHeader("content-type", "application/json")
+                            .addHeader("x-rapidapi-key", "d7c524c39cmsh6cdf18b939e46c0p1becb7jsnec525a922f65")
+                            .addHeader("x-rapidapi-host", "microsoft-computer-vision3.p.rapidapi.com")
+                            .build();
+
+                    Response response = client.newCall(request).execute();
+                    String jsonData = response.body().string();
+                    Log.d("API_RESPONSE", jsonData);
+
+                    JSONObject jj = new JSONObject(jsonData);
+                    JSONObject jsonDescription = (JSONObject) jj.get("description");
+                    JSONArray jsonCaption = (JSONArray) jsonDescription.get("captions");
+                    JSONArray jsonTag = (JSONArray) jsonDescription.get("tags");
+
+                    String resp = "Results: ";
+
+                    /*for(int i=0; i<jsonTag.length();i++) {
+                        resp = resp + jsonTag.getString(i) + ", ";
+                    }
+
+                    resp += "\n";*/
+
+                    for(int i=0; i<jsonCaption.length();i++) {
+                        JSONObject jsonObject = jsonCaption.getJSONObject(i);
+                        resp = resp + jsonObject.get("text") + " ";
+                    }
+
+                    Log.d("RESPONSE", resp);
+                    String finalResp1 = resp;
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            progressBar.setVisibility(View.GONE);
+                            inflater = (getActivity()).getLayoutInflater();
+                            v = inflater.inflate(R.layout.diolag_layout, null);
+                            cancel = v.findViewById(R.id.imageView4);
+                            etText = v.findViewById(R.id.editTextTextPersonName);
+                            btSpeak = v.findViewById(R.id.imageView5);
+                            btPause = v.findViewById(R.id.imageView6);
+                            etText.setMovementMethod(new ScrollingMovementMethod());
+                            etText.setInputType(InputType.TYPE_CLASS_TEXT |
+                                    InputType.TYPE_TEXT_FLAG_MULTI_LINE |
+                                    InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                            etText.setText(finalResp1);
+                            Spinner dropdown = v.findViewById(R.id.spinner);
+                            String[] items = new String[]{"Select Language", "English", "Hindi"};
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
+                            dropdown.setAdapter(adapter);
+
+                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
+                                    .setCancelable(false)
+                                    .setView(v).show();
+
+                            btSpeak.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    if(!etText.getText().equals("")) {
+                                        textToSpeech.speak(etText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
+                                    }
+                                }
+                            });
+
+                            btPause.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    if(!etText.getText().equals("") && textToSpeech.isSpeaking()) {
+                                        textToSpeech.stop();
+                                    }
+                                }
+                            });
+
+                            cancel.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    alertDialog.dismiss();
+                                    captureImage.setEnabled(true);
+                                    previewImage.setVisibility(View.GONE);
+                                    mPreviewView.setVisibility(View.VISIBLE);
+                                    textToSpeech.stop();
+                                }
+                            });
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+        thread.start();
+
     }
 
     private void objectDetection(String imageURL) {
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    //Your code goes here
+
+                    String content =  "{\r\"url\":\""+imageURL+"\"\r}";
+
+                    OkHttpClient client = new OkHttpClient();
+
+                    MediaType mediaType = MediaType.parse("application/json");
+                    RequestBody body = RequestBody.create(mediaType, content);
+
+                    Request request = new Request.Builder()
+                            .url("https://microsoft-computer-vision3.p.rapidapi.com/detect")
+                            .post(body)
+                            .addHeader("content-type", "application/json")
+                            .addHeader("x-rapidapi-key", "d7c524c39cmsh6cdf18b939e46c0p1becb7jsnec525a922f65")
+                            .addHeader("x-rapidapi-host", "microsoft-computer-vision3.p.rapidapi.com")
+                            .build();
+
+                    Response response = client.newCall(request).execute();
+                    String jsonData = response.body().string();
+                    Log.d("API_RESPONSE", jsonData);
+
+                    JSONObject jj = new JSONObject(jsonData);
+                    JSONArray jsonArray = (JSONArray) jj.get("objects");
+
+                    String resp = "Detected Objects: ";
+
+                    for(int i=0; i<jsonArray.length();i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        resp = resp + jsonObject.get("object") + ", ";
+                    }
+
+                    Log.d("RESPONSE", resp);
+                    String finalResp1 = resp;
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            progressBar.setVisibility(View.GONE);
+                            inflater = (getActivity()).getLayoutInflater();
+                            v = inflater.inflate(R.layout.diolag_layout, null);
+                            cancel = v.findViewById(R.id.imageView4);
+                            etText = v.findViewById(R.id.editTextTextPersonName);
+                            btSpeak = v.findViewById(R.id.imageView5);
+                            btPause = v.findViewById(R.id.imageView6);
+                            etText.setMovementMethod(new ScrollingMovementMethod());
+                            etText.setInputType(InputType.TYPE_CLASS_TEXT |
+                                    InputType.TYPE_TEXT_FLAG_MULTI_LINE |
+                                    InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                            etText.setText(finalResp1);
+                            Spinner dropdown = v.findViewById(R.id.spinner);
+                            String[] items = new String[]{"Select Language", "English", "Hindi"};
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
+                            dropdown.setAdapter(adapter);
+
+                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
+                                    .setCancelable(false)
+                                    .setView(v).show();
+
+                            btSpeak.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    if(!etText.getText().equals("")) {
+                                        textToSpeech.speak(etText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
+                                    }
+                                }
+                            });
+
+                            btPause.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    if(!etText.getText().equals("") && textToSpeech.isSpeaking()) {
+                                        textToSpeech.stop();
+                                    }
+                                }
+                            });
+
+                            cancel.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    alertDialog.dismiss();
+                                    captureImage.setEnabled(true);
+                                    previewImage.setVisibility(View.GONE);
+                                    mPreviewView.setVisibility(View.VISIBLE);
+                                    textToSpeech.stop();
+                                }
+                            });
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
     }
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {
