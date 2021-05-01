@@ -1,4 +1,4 @@
-package com.example.hackfest2021_team_insight;
+package com.example.hackfest2021_team_insight.activities;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -12,6 +12,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
+import com.example.hackfest2021_team_insight.PageViewAdapter;
+import com.example.hackfest2021_team_insight.R;
+import com.example.hackfest2021_team_insight.fragments.ExploreFragment;
+import com.example.hackfest2021_team_insight.fragments.RecognisationFragment;
+import com.example.hackfest2021_team_insight.fragments.TextFragment;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 

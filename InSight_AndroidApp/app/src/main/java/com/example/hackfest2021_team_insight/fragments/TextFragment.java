@@ -1,4 +1,4 @@
-package com.example.hackfest2021_team_insight;
+package com.example.hackfest2021_team_insight.fragments;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -43,6 +43,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.example.hackfest2021_team_insight.R;
+import com.example.hackfest2021_team_insight.utilities.FileCompressor;
+import com.example.hackfest2021_team_insight.utilities.Helper;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.storage.FirebaseStorage;
@@ -156,7 +159,7 @@ public class TextFragment extends Fragment {
                     Toast.makeText(getContext(),
                             "Sorry your device not supported",
                             Toast.LENGTH_SHORT).show();
-                    textToSpeech.speak("Sorry your device not supported", TextToSpeech.QUEUE_FLUSH, null);
+                    Helper.speakOutText("Sorry your device not supported", textToSpeech);
                 }
             }
         });
@@ -170,10 +173,15 @@ public class TextFragment extends Fragment {
         switch (requestCode) {
             case REQ_CODE: {
                 if ((resultCode == Activity.RESULT_OK) && (data != null)) {
-                    ArrayList result = data
+                    ArrayList results = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    textViewResults.setText((String) result.get(0));
-                    textToSpeech.speak(textViewResults.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+                    String output = (String) results.get(0);
+                    textViewResults.setText(output);
+                    if (output.contains("Start reading") || output.contains("read the book") || output.contains("read")) {
+                        // start reading a page by taking its pick
+                        Helper.performClick(captureImage);
+                    } else
+                        Helper.speakOutText("Sorry I didn't understand!", textToSpeech);
                 }
                 break;
             }
@@ -264,13 +272,12 @@ public class TextFragment extends Fragment {
         cameraProvider.unbindAll();
         Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview, imageAnalysis, imageCapture);
 
-
-
         captureImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Helper.speakOutText("Capturing image of book to read. Please Wait..", textToSpeech);
 
-                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
+                String tempUri = getImageUri(getActivity(), mPreviewView.getBitmap()).toString();
                 previewImage.setVisibility(View.VISIBLE);
                 mPreviewView.setVisibility(View.GONE);
                 previewImage.setImageBitmap(mPreviewView.getBitmap());
@@ -278,19 +285,21 @@ public class TextFragment extends Fragment {
                 progressBar.setVisibility(View.VISIBLE);
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
-                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
+                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
 
-                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                FileCompressor fileCompressor = new FileCompressor();
+                photosRef.putFile(Uri.fromFile(fileCompressor.compressImage(tempUri, getContext()))).
+                        addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
-                            public void onSuccess(Uri uri) {
-                                imageURL = uri.toString();
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        imageURL = uri.toString();
 
-                                if(fragName == "Read") {
-                                    textRecognition(imageURL);
-                                }
+                                        if (fragName == "Read") {
+                                            textRecognition(imageURL);
+                                        }
                             }
                         });
                     }
@@ -383,7 +392,7 @@ public class TextFragment extends Fragment {
                                 @Override
                                 public void onClick(View v) {
                                     if (!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+                                        Helper.speakOutText(etText.getText().toString(), textToSpeech);
                                     }
                                 }
                             });

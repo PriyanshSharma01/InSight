@@ -9,7 +9,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-class PageViewAdapter extends FragmentPagerAdapter {
+public class PageViewAdapter extends FragmentPagerAdapter {
     List<Fragment> listFragment = new ArrayList<>();
     List<String> titleList = new ArrayList<>();
 
@@ -39,3 +39,4 @@ class PageViewAdapter extends FragmentPagerAdapter {
         titleList.add(title);
     }
 }
+

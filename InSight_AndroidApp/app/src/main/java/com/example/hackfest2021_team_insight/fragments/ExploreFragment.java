@@ -1,4 +1,4 @@
-package com.example.hackfest2021_team_insight;
+package com.example.hackfest2021_team_insight.fragments;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -43,6 +43,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.example.hackfest2021_team_insight.R;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.FirebaseApp;
