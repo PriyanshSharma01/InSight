@@ -23,7 +23,7 @@ import com.google.android.material.tabs.TabLayout;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
-    private ViewPager viewPager;
+    private static ViewPager viewPager;
     private TabLayout tabLayout;
 
 
@@ -81,5 +81,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         viewPager.setAdapter(pageViewAdapter);
     }
 
-
+    public void setCurrentTab(int tabNo, int i) {
+        viewPager.setCurrentItem(tabNo, true);
+    }
 }

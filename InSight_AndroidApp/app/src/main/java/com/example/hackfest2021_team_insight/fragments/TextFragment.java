@@ -44,6 +44,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.hackfest2021_team_insight.R;
+import com.example.hackfest2021_team_insight.activities.MainActivity;
 import com.example.hackfest2021_team_insight.utilities.FileCompressor;
 import com.example.hackfest2021_team_insight.utilities.Helper;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -173,13 +174,27 @@ public class TextFragment extends Fragment {
         switch (requestCode) {
             case REQ_CODE: {
                 if ((resultCode == Activity.RESULT_OK) && (data != null)) {
+                    MainActivity ac = new MainActivity();
+
                     ArrayList results = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String output = (String) results.get(0);
                     textViewResults.setText(output);
-                    if (output.contains("Start reading") || output.contains("read the book") || output.contains("read")) {
+                    if (output.contains("reading") || output.contains("read")) {
                         // start reading a page by taking its pick
                         Helper.performClick(captureImage);
+                    } else if (output.contains("object")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(2, 1);
+                    } else if (output.contains("scene")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(2, 2);
+                    } else if (output.contains("explore")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(2, 0);
+                    } else if (output.contains("recognition") || output.contains("currency") || output.contains("colour") || output.contains("facial")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(3, 0);
                     } else
                         Helper.speakOutText("Sorry I didn't understand!", textToSpeech);
                 }
@@ -387,6 +402,9 @@ public class TextFragment extends Fragment {
                             alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                             alertDialog.show();
 
+                            if (!etText.getText().equals("")) {
+                                Helper.speakOutText(etText.getText().toString(), textToSpeech);
+                            }
 
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override

@@ -14,9 +14,11 @@ import android.speech.tts.TextToSpeech;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -42,6 +44,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.hackfest2021_team_insight.R;
+import com.example.hackfest2021_team_insight.activities.MainActivity;
 import com.example.hackfest2021_team_insight.utilities.FileCompressor;
 import com.example.hackfest2021_team_insight.utilities.Helper;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -173,12 +176,19 @@ public class ExploreFragment extends Fragment {
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String output = (String) results.get(0);
                     textViewResults.setText(output);
+                    MainActivity ac = new MainActivity();
                     if (output.contains("Explore the Object") || output.contains("details of the object") || output.contains("object")) {
                         // start reading a page by taking its pick
                         Helper.performClick(captureImage);
                     } else if (output.contains("Explore the scene") || output.contains("scene") || output.contains("view details")) {
                         // start reading a page by taking its pick
                         Helper.performClick(captureImage1);
+                    } else if (output.contains("reading") || output.contains("read")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(1, 1);
+                    } else if (output.contains("recognition") || output.contains("currency") || output.contains("colour") || output.contains("facial")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(3, 0);
                     } else
                         Helper.speakOutText("Sorry I didn't understand!", textToSpeech);
                 }
@@ -407,15 +417,22 @@ public class ExploreFragment extends Fragment {
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
                             dropdown.setAdapter(adapter);
 
-                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                    .setCancelable(false)
-                                    .setView(v).show();
+                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                            alertDialog.setCancelable(false);
+                            alertDialog.setView(v);
+                            alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                            alertDialog.getWindow().setBackgroundDrawable(null);
+                            alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                            alertDialog.show();
+                            if (!etText.getText().equals("")) {
+                                Helper.speakOutText(etText.getText().toString(), textToSpeech);
+                            }
 
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    if(!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
+                                    if (!etText.getText().equals("")) {
+                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
                                     }
                                 }
                             });
@@ -513,15 +530,22 @@ public class ExploreFragment extends Fragment {
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
                             dropdown.setAdapter(adapter);
 
-                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                    .setCancelable(false)
-                                    .setView(v).show();
+                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                            alertDialog.setCancelable(false);
+                            alertDialog.setView(v);
+                            alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                            alertDialog.getWindow().setBackgroundDrawable(null);
+                            alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                            alertDialog.show();
+                            if (!etText.getText().equals("")) {
+                                Helper.speakOutText(etText.getText().toString(), textToSpeech);
+                            }
 
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    if(!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
+                                    if (!etText.getText().equals("")) {
+                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
                                     }
                                 }
                             });

@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
@@ -34,7 +33,6 @@ import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.extensions.HdrImageCaptureExtender;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -46,9 +44,10 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.hackfest2021_team_insight.R;
+import com.example.hackfest2021_team_insight.activities.MainActivity;
+import com.example.hackfest2021_team_insight.utilities.Helper;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -56,10 +55,7 @@ import com.google.firebase.storage.UploadTask;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -176,10 +172,33 @@ public class RecognisationFragment extends Fragment {
         switch (requestCode) {
             case REQ_CODE: {
                 if ((resultCode == Activity.RESULT_OK) && (data != null)) {
-                    ArrayList result = data
+                    MainActivity ac = new MainActivity();
+
+                    ArrayList results = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    textViewResults.setText((String) result.get(0));
-                    textToSpeech.speak(textViewResults.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+                    String output = (String) results.get(0);
+                    textViewResults.setText(output);
+                    if (output.contains("reading") || output.contains("read")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(1, 1);
+                    } else if (output.contains("object")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(2, 1);
+                    } else if (output.contains("scene")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(2, 2);
+                    } else if (output.contains("explore")) {
+                        // start reading a page by taking its pick
+                        ac.setCurrentTab(2, 0);
+                    } else if (output.contains("currency")) {
+                        // start reading a page by taking its pick
+                        Helper.performClick(captureImage2);
+                    } else if (output.contains("colour")) {
+                        Helper.performClick(captureImage1);
+                    } else if (output.contains("facial") || output.contains("face") || output.contains("person")) {
+                        Helper.performClick(captureImage);
+                    } else
+                        Helper.speakOutText("Sorry I didn't understand!", textToSpeech);
                 }
                 break;
             }
@@ -327,7 +346,7 @@ public class RecognisationFragment extends Fragment {
                             @Override
                             public void onSuccess(Uri uri) {
                                 imageURL = uri.toString();
-                                Log.d("IMAGE_URL", imageURL.toString());
+                                Log.d("IMAGE_URL", imageURL);
                                 colorDetection(imageURL);
 
                             }
@@ -358,7 +377,7 @@ public class RecognisationFragment extends Fragment {
                             @Override
                             public void onSuccess(Uri uri) {
                                 imageURL = uri.toString();
-                                Log.d("IMAGE_URL", imageURL.toString());
+                                Log.d("IMAGE_URL", imageURL);
                                 currencyDetection(imageURL);
                             }
                         });
@@ -432,6 +451,9 @@ public class RecognisationFragment extends Fragment {
                             alertDialog.getWindow().setBackgroundDrawable(null);
                             alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                             alertDialog.show();
+                            if (!etText.getText().equals("")) {
+                                Helper.speakOutText(etText.getText().toString(), textToSpeech);
+                            }
 
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override
@@ -542,6 +564,9 @@ public class RecognisationFragment extends Fragment {
                             alertDialog.getWindow().setBackgroundDrawable(null);
                             alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                             alertDialog.show();
+                            if (!etText.getText().equals("")) {
+                                Helper.speakOutText(etText.getText().toString(), textToSpeech);
+                            }
 
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override
