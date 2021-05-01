@@ -372,6 +372,104 @@ public class RecognisationFragment extends Fragment {
     }
 
     private void colorDetection(String imageURL) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String content = "{\r\"url\":\"" + imageURL + "\"\r}";
+                    OkHttpClient client = new OkHttpClient();
+
+                    MediaType mediaType = MediaType.parse("application/json");
+                    RequestBody body = RequestBody.create(mediaType, content);
+
+                    Request request = new Request.Builder()
+                            .url("https://microsoft-computer-vision3.p.rapidapi.com/analyze?language=en&descriptionExclude=Celebrities&visualFeatures=Color&details=Celebrities")
+                            .post(body)
+                            .addHeader("content-type", "application/json")
+                            .addHeader("x-rapidapi-key", "d7c524c39cmsh6cdf18b939e46c0p1becb7jsnec525a922f65")
+                            .addHeader("x-rapidapi-host", "microsoft-computer-vision3.p.rapidapi.com")
+                            .build();
+
+                    Response response = client.newCall(request).execute();
+                    String jsonData = response.body().string();
+                    Log.d("API_RESPONSE", jsonData);
+
+                    JSONObject jj = new JSONObject(jsonData);
+                    JSONObject jsonColor = (JSONObject) jj.get("color");
+                    JSONArray jsonArrayColor = (JSONArray) jsonColor.get("dominantColors");
+                    String resp = "Dominant Colors: ";
+
+                    for (int i=0; i<jsonArrayColor.length();i++) {
+                        resp = resp + jsonArrayColor.get(i) +" ";
+                    }
+
+                    String finalResp1 = resp;
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            progressBar.setVisibility(View.GONE);
+                            inflater = (getActivity()).getLayoutInflater();
+                            v = inflater.inflate(R.layout.diolag_layout, null);
+                            cancel = v.findViewById(R.id.imageView4);
+                            etText = v.findViewById(R.id.editTextTextPersonName);
+                            btSpeak = v.findViewById(R.id.imageView5);
+                            btPause = v.findViewById(R.id.imageView6);
+                            etText.setMovementMethod(new ScrollingMovementMethod());
+                            etText.setInputType(InputType.TYPE_CLASS_TEXT |
+                                    InputType.TYPE_TEXT_FLAG_MULTI_LINE |
+                                    InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                            etText.setText(finalResp1);
+                            Spinner dropdown = v.findViewById(R.id.spinner);
+                            String[] items = new String[]{"Select Language", "English", "Hindi"};
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
+                            dropdown.setAdapter(adapter);
+
+                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                            alertDialog.setCancelable(false);
+                            alertDialog.setView(v);
+                            alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                            alertDialog.getWindow().setBackgroundDrawable(null);
+                            alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                            alertDialog.show();
+
+                            btSpeak.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    if (!etText.getText().equals("")) {
+                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+                                    }
+                                }
+                            });
+
+                            btPause.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    if (!etText.getText().equals("") && textToSpeech.isSpeaking()) {
+                                        textToSpeech.stop();
+                                    }
+                                }
+                            });
+
+                            cancel.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    alertDialog.dismiss();
+                                    captureImage.setEnabled(true);
+                                    previewImage.setVisibility(View.GONE);
+                                    mPreviewView.setVisibility(View.VISIBLE);
+                                    textToSpeech.stop();
+                                }
+                            });
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
     }
 
     private void faceDetection(String imageU) {
