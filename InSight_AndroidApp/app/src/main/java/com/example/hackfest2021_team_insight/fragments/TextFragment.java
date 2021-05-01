@@ -146,24 +146,7 @@ public class TextFragment extends Fragment {
             capture2.setVisibility(View.VISIBLE);
         }
 
-        assistant.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Need to speak");
-                try {
-                    startActivityForResult(intent, REQ_CODE);
-                } catch (ActivityNotFoundException a) {
-                    Toast.makeText(getContext(),
-                            "Sorry your device not supported",
-                            Toast.LENGTH_SHORT).show();
-                    Helper.speakOutText("Sorry your device not supported", textToSpeech);
-                }
-            }
-        });
+
 
         return view;
     }
@@ -287,12 +270,31 @@ public class TextFragment extends Fragment {
         cameraProvider.unbindAll();
         Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview, imageAnalysis, imageCapture);
 
+        assistant.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Need to speak");
+                try {
+                    startActivityForResult(intent, REQ_CODE);
+                } catch (ActivityNotFoundException a) {
+                    Toast.makeText(getContext(),
+                            "Sorry your device not supported",
+                            Toast.LENGTH_SHORT).show();
+                    Helper.speakOutText("Sorry your device not supported", textToSpeech);
+                }
+            }
+        });
+
         captureImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Helper.speakOutText("Capturing image of book to read. Please Wait..", textToSpeech);
 
-                String tempUri = getImageUri(getActivity(), mPreviewView.getBitmap()).toString();
+                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
                 previewImage.setVisibility(View.VISIBLE);
                 mPreviewView.setVisibility(View.GONE);
                 previewImage.setImageBitmap(mPreviewView.getBitmap());
@@ -303,7 +305,7 @@ public class TextFragment extends Fragment {
                 final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
 
                 FileCompressor fileCompressor = new FileCompressor();
-                photosRef.putFile(Uri.fromFile(fileCompressor.compressImage(tempUri, getContext()))).
+                photosRef.putFile(tempUri).
                         addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {

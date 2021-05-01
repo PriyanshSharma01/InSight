@@ -144,24 +144,6 @@ public class RecognisationFragment extends Fragment {
             capture2.setVisibility(View.VISIBLE);
         }
 
-        assistant.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Need to speak");
-                try {
-                    startActivityForResult(intent, REQ_CODE);
-                } catch (ActivityNotFoundException a) {
-                    Toast.makeText(getContext(),
-                            "Sorry your device not supported",
-                            Toast.LENGTH_SHORT).show();
-                    textToSpeech.speak("Sorry your device not supported", TextToSpeech.QUEUE_FLUSH, null);
-                }
-            }
-        });
 
         return view;
     }
@@ -289,6 +271,24 @@ public class RecognisationFragment extends Fragment {
         cameraProvider.unbindAll();
         Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageAnalysis, imageCapture);
 
+        assistant.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Need to speak");
+                try {
+                    startActivityForResult(intent, REQ_CODE);
+                } catch (ActivityNotFoundException a) {
+                    Toast.makeText(getContext(),
+                            "Sorry your device not supported",
+                            Toast.LENGTH_SHORT).show();
+                    textToSpeech.speak("Sorry your device not supported", TextToSpeech.QUEUE_FLUSH, null);
+                }
+            }
+        });
 
         captureImage.setOnClickListener(new View.OnClickListener() {
             @Override
