@@ -15,9 +15,11 @@ import android.speech.tts.TextToSpeech;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -352,10 +354,13 @@ public class RecognisationFragment extends Fragment {
                                 mPreviewView.setVisibility(View.GONE);
                                 previewImage.setImageBitmap(mPreviewView.getBitmap());
                                 captureImage.setEnabled(false);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                        .setCancelable(false)
-                                        .setView(v)
-                                        .show();
+                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                                alertDialog.setCancelable(false);
+                                alertDialog.setView(v);
+                                alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                                alertDialog.getWindow().setBackgroundDrawable(null);
+                                alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                                alertDialog.show();
 
                                 cancel.setOnClickListener(new View.OnClickListener() {
                                     @Override
@@ -425,10 +430,13 @@ public class RecognisationFragment extends Fragment {
                                 mPreviewView.setVisibility(View.GONE);
                                 previewImage.setImageBitmap(mPreviewView.getBitmap());
                                 captureImage.setEnabled(false);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                        .setCancelable(false)
-                                        .setView(v)
-                                        .show();
+                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                                alertDialog.setCancelable(false);
+                                alertDialog.setView(v);
+                                alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                                alertDialog.getWindow().setBackgroundDrawable(null);
+                                alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                                alertDialog.show();
 
                                 cancel.setOnClickListener(new View.OnClickListener() {
                                     @Override
@@ -521,9 +529,13 @@ public class RecognisationFragment extends Fragment {
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
                             dropdown.setAdapter(adapter);
 
-                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                    .setCancelable(false)
-                                    .setView(v).show();
+                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                            alertDialog.setCancelable(false);
+                            alertDialog.setView(v);
+                            alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                            alertDialog.getWindow().setBackgroundDrawable(null);
+                            alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                            alertDialog.show();
 
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override

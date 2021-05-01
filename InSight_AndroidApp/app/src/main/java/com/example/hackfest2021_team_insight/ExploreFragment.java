@@ -13,9 +13,11 @@ import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -392,10 +394,13 @@ public class ExploreFragment extends Fragment {
                                 mPreviewView.setVisibility(View.GONE);
                                 previewImage.setImageBitmap(mPreviewView.getBitmap());
                                 captureImage.setEnabled(false);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                        .setCancelable(false)
-                                        .setView(v)
-                                        .show();
+                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                                alertDialog.setCancelable(false);
+                                alertDialog.setView(v);
+                                alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                                alertDialog.getWindow().setBackgroundDrawable(null);
+                                alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                                alertDialog.show();
 
                                 cancel.setOnClickListener(new View.OnClickListener() {
                                     @Override
