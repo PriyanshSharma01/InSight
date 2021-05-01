@@ -75,7 +75,7 @@ public class RecognisationFragment extends Fragment {
     private final int REQ_CODE = 100;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
     private final Executor executor = Executors.newSingleThreadExecutor();
-    private final String fragName;
+    private final String fragName = "Recognition";
     LayoutInflater inflater;
     View v;
     ImageView cancel, btSpeak, btPause;
@@ -90,8 +90,7 @@ public class RecognisationFragment extends Fragment {
     private ImageView assistant;
     private TextView textViewResults;
 
-    public RecognisationFragment(String fragName) {
-        this.fragName = fragName;
+    public RecognisationFragment() {
         // Required empty public constructor
     }
 
@@ -292,11 +291,7 @@ public class RecognisationFragment extends Fragment {
                                 imageURL = uri.toString();
                                 Log.d("IMAGE_URL", imageURL);
 
-                                if (fragName == "Read") {
-                                    textRecognition(imageURL);
-                                } else if (fragName == "Explore") {
-                                    objectDetection(imageURL);
-                                } else {
+                                if (fragName != "Read" && fragName != "Explore") {
                                     faceDetection(imageURL);
                                 }
                                 //Toast.makeText(getContext(), imageURL, Toast.LENGTH_SHORT).show();
@@ -304,58 +299,6 @@ public class RecognisationFragment extends Fragment {
                         });
                     }
                 });
-                /*SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-                File file = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES + "/viz_images"), mDateFormat.format(new Date())+ ".jpg");
-
-                Toast.makeText(getContext(), "Capture successfully", Toast.LENGTH_SHORT).show();
-                ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-                imageCapture.takePicture(outputFileOptions, executor, new ImageCapture.OnImageSavedCallback () {
-                    @Override
-                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
-
-                                //get the spinner from the xml.
-                                Spinner dropdown = v.findViewById(R.id.spinner);
-                                String[] items = new String[]{"Select Language", "English", "Hindi"};
-                                ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                                dropdown.setAdapter(adapter);
-
-                                previewImage.setVisibility(View.VISIBLE);
-                                mPreviewView.setVisibility(View.GONE);
-                                previewImage.setImageBitmap(mPreviewView.getBitmap());
-                                captureImage.setEnabled(false);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                        .setCancelable(false)
-                                        .setView(v).show();
-
-                                if(fragName == "Read") {
-                                    textRecognition(imageURL);
-                                }else if(fragName == "Explore") {
-                                    objectDetection(imageURL);
-                                }else {
-                                    faceDetection(imageURL);
-                                }
-
-
-
-                                cancel.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        alertDialog.dismiss();
-                                        captureImage.setEnabled(true);
-                                        previewImage.setVisibility(View.GONE);
-                                        mPreviewView.setVisibility(View.VISIBLE);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                    @Override
-                    public void onError(@NonNull ImageCaptureException error) {
-                        error.printStackTrace();
-                    }
-                });*/
             }
         });
 
@@ -392,9 +335,7 @@ public class RecognisationFragment extends Fragment {
                                     }
                                 });
 
-                                if (fragName == "Explore") {
-                                    sceneDescription(imageURL);
-                                } else {
+                                if (fragName != "Explore") {
                                     colorDetection(imageURL);
                                 }
 
@@ -509,16 +450,12 @@ public class RecognisationFragment extends Fragment {
                 });
             }
         });
-
     }
 
     private void currencyDetection(String imageURL) {
     }
 
     private void colorDetection(String imageURL) {
-    }
-
-    private void sceneDescription(String imageURL) {
     }
 
     private void faceDetection(String imageU) {
@@ -628,123 +565,6 @@ public class RecognisationFragment extends Fragment {
 
         thread.start();
 
-    }
-
-    private void objectDetection(String imageURL) {
-    }
-
-    private void textRecognition(String imageU) {
-        Thread thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-
-                    String content = "{\r\"url\":\"" + imageU + "\"\r}";
-
-                    OkHttpClient client = new OkHttpClient();
-
-                    MediaType mediaType = MediaType.parse("application/json");
-                    RequestBody body = RequestBody.create(mediaType, content);
-
-                    Request request = new Request.Builder()
-                            .url("https://microsoft-computer-vision3.p.rapidapi.com/ocr?detectOrientation=true&language=unk")
-                            .post(body)
-                            .addHeader("content-type", "application/json")
-                            .addHeader("x-rapidapi-key", "d7c524c39cmsh6cdf18b939e46c0p1becb7jsnec525a922f65")
-                            .addHeader("x-rapidapi-host", "microsoft-computer-vision3.p.rapidapi.com")
-                            .build();
-
-                    Response response = client.newCall(request).execute();
-                    String jsonData = response.body().string();
-                    Log.d("API_RESPONSE", jsonData);
-
-                    JSONObject jj = new JSONObject(jsonData);
-                    JSONArray jsonRegions = (JSONArray) jj.get("regions");
-
-                    String resp = "Text Detected: ";
-
-                    for (int i = 0; i < jsonRegions.length(); i++) {
-                        JSONObject jsonObject = jsonRegions.getJSONObject(i);
-                        JSONArray jsonLines = (JSONArray) jsonObject.get("lines");
-
-                        for (int j = 0; j < jsonLines.length(); j++) {
-                            JSONObject jsonLineObject = jsonLines.getJSONObject(j);
-                            JSONArray jsonWords = (JSONArray) jsonLineObject.get("words");
-
-                            for (int k = 0; k < jsonWords.length(); k++) {
-                                JSONObject jsonWordObject = jsonWords.getJSONObject(k);
-                                resp = resp + jsonWordObject.get("text") + " ";
-                            }
-
-                        }
-                    }
-
-                    Log.d("RESPONSE", resp);
-                    String finalResp1 = resp;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            progressBar.setVisibility(View.GONE);
-                            inflater = (getActivity()).getLayoutInflater();
-                            v = inflater.inflate(R.layout.diolag_layout, null);
-                            cancel = v.findViewById(R.id.imageView4);
-                            etText = v.findViewById(R.id.editTextTextPersonName);
-                            btSpeak = v.findViewById(R.id.imageView5);
-                            btPause = v.findViewById(R.id.imageView6);
-                            etText.setMovementMethod(new ScrollingMovementMethod());
-                            etText.setInputType(InputType.TYPE_CLASS_TEXT |
-                                    InputType.TYPE_TEXT_FLAG_MULTI_LINE |
-                                    InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-                            etText.setText(finalResp1);
-                            Spinner dropdown = v.findViewById(R.id.spinner);
-                            String[] items = new String[]{"Select Language", "English", "Hindi"};
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                            dropdown.setAdapter(adapter);
-
-                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                    .setCancelable(false)
-                                    .setView(v).show();
-
-                            btSpeak.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if (!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
-                                    }
-                                }
-                            });
-
-                            btPause.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if (!etText.getText().equals("") && textToSpeech.isSpeaking()) {
-                                        textToSpeech.stop();
-                                    }
-                                }
-                            });
-
-                            cancel.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    alertDialog.dismiss();
-                                    captureImage.setEnabled(true);
-                                    previewImage.setVisibility(View.GONE);
-                                    mPreviewView.setVisibility(View.VISIBLE);
-                                    textToSpeech.stop();
-                                }
-                            });
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start();
     }
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {

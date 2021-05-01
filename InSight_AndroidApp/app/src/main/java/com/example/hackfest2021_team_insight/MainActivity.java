@@ -27,15 +27,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        toolbar=findViewById(R.id.main_toolbar);
+        toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("InSight");
         toolbar.setTitleTextColor(Color.WHITE);
 
         NavigationView navigationView = findViewById(R.id.nav_view);
 
-        tabLayout=findViewById(R.id.main_tab);
-        viewPager=findViewById(R.id.tabPager);
+        tabLayout = findViewById(R.id.tabLayout);
+        viewPager = findViewById(R.id.viewpager);
 
         setUpViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
@@ -66,9 +66,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void setUpViewPager(ViewPager viewPager) {
         PageViewAdapter pageViewAdapter = new PageViewAdapter(getSupportFragmentManager(), 0);
-        TextFragment readFragTab = new TextFragment("Read");
-        ExploreFragment exploreFragTab = new ExploreFragment("Explore");
-        RecognisationFragment recognitionFragTab = new RecognisationFragment("Recognition");
+        TextFragment readFragTab = new TextFragment();
+        ExploreFragment exploreFragTab = new ExploreFragment();
+        RecognisationFragment recognitionFragTab = new RecognisationFragment();
 
         pageViewAdapter.addFragment(readFragTab, "Read");
         pageViewAdapter.addFragment(exploreFragTab, "Explore");

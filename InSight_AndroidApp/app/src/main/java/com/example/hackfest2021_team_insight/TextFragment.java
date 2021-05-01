@@ -8,16 +8,17 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -32,7 +33,6 @@ import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.extensions.HdrImageCaptureExtender;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -45,7 +45,6 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -53,10 +52,7 @@ import com.google.firebase.storage.UploadTask;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -79,7 +75,7 @@ public class TextFragment extends Fragment {
     private ImageView captureImage, captureImage1, captureImage2;
     private ImageView previewImage;
     private CardView capture1, capture2;
-    private final String fragName;
+    private final String fragName = "Read";
     private String imageURL;
     private ProgressBar progressBar;
     private TextToSpeech textToSpeech;
@@ -91,8 +87,7 @@ public class TextFragment extends Fragment {
     ImageView cancel, btSpeak, btPause;
     EditText etText;
 
-    public TextFragment(String fragName) {
-        this.fragName = fragName;
+    public TextFragment() {
         // Required empty public constructor
     }
 
@@ -292,14 +287,9 @@ public class TextFragment extends Fragment {
                             @Override
                             public void onSuccess(Uri uri) {
                                 imageURL = uri.toString();
-                                Log.d("IMAGE_URL", imageURL);
 
                                 if(fragName == "Read") {
                                     textRecognition(imageURL);
-                                }else if(fragName == "Explore") {
-                                    objectDetection(imageURL);
-                                }else {
-                                    faceDetection(imageURL);
                                 }
                             }
                         });
@@ -308,403 +298,6 @@ public class TextFragment extends Fragment {
 
             }
         });
-
-        captureImage1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
-                previewImage.setVisibility(View.VISIBLE);
-                mPreviewView.setVisibility(View.GONE);
-                previewImage.setImageBitmap(mPreviewView.getBitmap());
-                captureImage.setEnabled(false);
-                progressBar.setVisibility(View.VISIBLE);
-
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
-
-                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                imageURL = uri.toString();
-                                Log.d("IMAGE_URL", imageURL.toString());
-
-                                if(fragName == "Explore") {
-                                    sceneDescription(imageURL);
-                                }else {
-                                    colorDetection(imageURL);
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        });
-
-        captureImage2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
-                previewImage.setVisibility(View.VISIBLE);
-                mPreviewView.setVisibility(View.GONE);
-                previewImage.setImageBitmap(mPreviewView.getBitmap());
-                captureImage.setEnabled(false);
-                progressBar.setVisibility(View.VISIBLE);
-
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
-
-                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                imageURL = uri.toString();
-                                Log.d("IMAGE_URL", imageURL.toString());
-                                currencyDetection(imageURL);
-                            }
-                        });
-                    }
-                });
-            }
-        });
-
-    }
-
-    private void currencyDetection(String imageURL) {
-    }
-
-    private void colorDetection(String imageURL) {
-    }
-
-    private void sceneDescription(String imageURL) {
-        Thread thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try  {
-                    //Your code goes here
-
-                    String content =  "{\r\"url\":\""+imageURL+"\"\r}";
-
-                    OkHttpClient client = new OkHttpClient();
-
-                    MediaType mediaType = MediaType.parse("application/json");
-                    RequestBody body = RequestBody.create(mediaType, content);
-
-                    Request request = new Request.Builder()
-                            .url("https://microsoft-computer-vision3.p.rapidapi.com/describe?language=en&maxCandidates=1&descriptionExclude=Celebrities")
-                            .post(body)
-                            .addHeader("content-type", "application/json")
-                            .addHeader("x-rapidapi-key", "d7c524c39cmsh6cdf18b939e46c0p1becb7jsnec525a922f65")
-                            .addHeader("x-rapidapi-host", "microsoft-computer-vision3.p.rapidapi.com")
-                            .build();
-
-                    Response response = client.newCall(request).execute();
-                    String jsonData = response.body().string();
-                    Log.d("API_RESPONSE", jsonData);
-
-                    JSONObject jj = new JSONObject(jsonData);
-                    JSONObject jsonDescription = (JSONObject) jj.get("description");
-                    JSONArray jsonCaption = (JSONArray) jsonDescription.get("captions");
-                    JSONArray jsonTag = (JSONArray) jsonDescription.get("tags");
-
-                    String resp = "Results: ";
-
-                    /*for(int i=0; i<jsonTag.length();i++) {
-                        resp = resp + jsonTag.getString(i) + ", ";
-                    }
-
-                    resp += "\n";*/
-
-                    for(int i=0; i<jsonCaption.length();i++) {
-                        JSONObject jsonObject = jsonCaption.getJSONObject(i);
-                        resp = resp + jsonObject.get("text") + " ";
-                    }
-
-                    Log.d("RESPONSE", resp);
-                    String finalResp1 = resp;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            progressBar.setVisibility(View.GONE);
-                            inflater = (getActivity()).getLayoutInflater();
-                            v = inflater.inflate(R.layout.diolag_layout, null);
-                            cancel = v.findViewById(R.id.imageView4);
-                            etText = v.findViewById(R.id.editTextTextPersonName);
-                            btSpeak = v.findViewById(R.id.imageView5);
-                            btPause = v.findViewById(R.id.imageView6);
-                            etText.setMovementMethod(new ScrollingMovementMethod());
-                            etText.setInputType(InputType.TYPE_CLASS_TEXT |
-                                    InputType.TYPE_TEXT_FLAG_MULTI_LINE |
-                                    InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-                            etText.setText(finalResp1);
-                            Spinner dropdown = v.findViewById(R.id.spinner);
-                            String[] items = new String[]{"Select Language", "English", "Hindi"};
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                            dropdown.setAdapter(adapter);
-
-                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                    .setCancelable(false)
-                                    .setView(v).show();
-
-                            btSpeak.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
-                                    }
-                                }
-                            });
-
-                            btPause.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(!etText.getText().equals("") && textToSpeech.isSpeaking()) {
-                                        textToSpeech.stop();
-                                    }
-                                }
-                            });
-
-                            cancel.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    alertDialog.dismiss();
-                                    captureImage.setEnabled(true);
-                                    previewImage.setVisibility(View.GONE);
-                                    mPreviewView.setVisibility(View.VISIBLE);
-                                    textToSpeech.stop();
-                                }
-                            });
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-
-        thread.start();
-    }
-
-    private void faceDetection(String imageU) {
-        Thread thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try  {
-                    String content =  "{\r\"url\":\""+imageU+"\"\r}";
-
-                    OkHttpClient client = new OkHttpClient();
-
-                    MediaType mediaType = MediaType.parse("application/json");
-                    RequestBody body = RequestBody.create(mediaType, content);
-
-                    Request request = new Request.Builder()
-                            .url("https://microsoft-face1.p.rapidapi.com/detect?detectionModel=detection_01&returnFaceAttributes=age%2C%20gender&returnFaceId=true&recognitionModel=recognition_01")
-                            .post(body)
-                            .addHeader("content-type", "application/json")
-                            .addHeader("x-rapidapi-key", "d7c524c39cmsh6cdf18b939e46c0p1becb7jsnec525a922f65")
-                            .addHeader("x-rapidapi-host", "microsoft-face1.p.rapidapi.com")
-                            .build();
-
-                    Response response = client.newCall(request).execute();
-                    String jsonData = response.body().string();
-                    Log.d("API_RESPONSE", jsonData);
-
-                    JSONArray jj = new JSONArray(jsonData);
-
-                    String resp = "Age: ";
-
-                    for(int i=0; i<jj.length();i++) {
-                        JSONObject jsonObject = jj.getJSONObject(i);
-                        JSONObject jsonObj = jsonObject.getJSONObject("faceAttributes");
-
-                        resp = resp + jsonObj.get("age") + ", Gender: "+jsonObj.get("gender");
-                    }
-
-                    if(resp.equals("")||resp.equals("Age: ")) {
-                        resp = "No Face detected";
-                    }
-
-                    Log.d("RESPONSE", resp);
-                    String finalResp1 = resp;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            progressBar.setVisibility(View.GONE);
-                            inflater = (getActivity()).getLayoutInflater();
-                            v = inflater.inflate(R.layout.diolag_layout, null);
-                            cancel = v.findViewById(R.id.imageView4);
-                            etText = v.findViewById(R.id.editTextTextPersonName);
-                            btSpeak = v.findViewById(R.id.imageView5);
-                            btPause = v.findViewById(R.id.imageView6);
-                            etText.setMovementMethod(new ScrollingMovementMethod());
-                            etText.setInputType(InputType.TYPE_CLASS_TEXT |
-                                    InputType.TYPE_TEXT_FLAG_MULTI_LINE |
-                                    InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-                            etText.setText(finalResp1);
-                            Spinner dropdown = v.findViewById(R.id.spinner);
-                            String[] items = new String[]{"Select Language", "English", "Hindi"};
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                            dropdown.setAdapter(adapter);
-
-                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                    .setCancelable(false)
-                                    .setView(v).show();
-
-                            btSpeak.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH,null);
-                                    }
-                                }
-                            });
-
-                            btPause.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(!etText.getText().equals("") && textToSpeech.isSpeaking()) {
-                                        textToSpeech.stop();
-                                    }
-                                }
-                            });
-
-                            cancel.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    alertDialog.dismiss();
-                                    captureImage.setEnabled(true);
-                                    previewImage.setVisibility(View.GONE);
-                                    mPreviewView.setVisibility(View.VISIBLE);
-                                    textToSpeech.stop();
-                                }
-                            });
-                        }
-                    });
-
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start();
-
-    }
-
-    private void objectDetection(String imageURL) {
-        Thread thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try  {
-                    //Your code goes here
-
-                    String content =  "{\r\"url\":\""+imageURL+"\"\r}";
-
-                    OkHttpClient client = new OkHttpClient();
-
-                    MediaType mediaType = MediaType.parse("application/json");
-                    RequestBody body = RequestBody.create(mediaType, content);
-
-                    Request request = new Request.Builder()
-                            .url("https://microsoft-computer-vision3.p.rapidapi.com/detect")
-                            .post(body)
-                            .addHeader("content-type", "application/json")
-                            .addHeader("x-rapidapi-key", "d7c524c39cmsh6cdf18b939e46c0p1becb7jsnec525a922f65")
-                            .addHeader("x-rapidapi-host", "microsoft-computer-vision3.p.rapidapi.com")
-                            .build();
-
-                    Response response = client.newCall(request).execute();
-                    String jsonData = response.body().string();
-                    Log.d("API_RESPONSE", jsonData);
-
-                    JSONObject jj = new JSONObject(jsonData);
-                    JSONArray jsonArray = (JSONArray) jj.get("objects");
-
-                    String resp = "Detected Objects: ";
-
-                    for(int i=0; i<jsonArray.length();i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        resp = resp + jsonObject.get("object") + ", ";
-                    }
-
-                    Log.d("RESPONSE", resp);
-                    String finalResp1 = resp;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            progressBar.setVisibility(View.GONE);
-                            inflater = (getActivity()).getLayoutInflater();
-                            v = inflater.inflate(R.layout.diolag_layout, null);
-                            cancel = v.findViewById(R.id.imageView4);
-                            etText = v.findViewById(R.id.editTextTextPersonName);
-                            btSpeak = v.findViewById(R.id.imageView5);
-                            btPause = v.findViewById(R.id.imageView6);
-                            etText.setMovementMethod(new ScrollingMovementMethod());
-                            etText.setInputType(InputType.TYPE_CLASS_TEXT |
-                                    InputType.TYPE_TEXT_FLAG_MULTI_LINE |
-                                    InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-                            etText.setText(finalResp1);
-                            Spinner dropdown = v.findViewById(R.id.spinner);
-                            String[] items = new String[]{"Select Language", "English", "Hindi"};
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
-                            dropdown.setAdapter(adapter);
-
-                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                    .setCancelable(false)
-                                    .setView(v).show();
-
-                            btSpeak.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
-                                    }
-                                }
-                            });
-
-                            btPause.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if(!etText.getText().equals("") && textToSpeech.isSpeaking()) {
-                                        textToSpeech.stop();
-                                    }
-                                }
-                            });
-
-                            cancel.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    alertDialog.dismiss();
-                                    captureImage.setEnabled(true);
-                                    previewImage.setVisibility(View.GONE);
-                                    mPreviewView.setVisibility(View.VISIBLE);
-                                    textToSpeech.stop();
-                                }
-                            });
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start();
     }
 
     private void textRecognition(String imageU) {
@@ -777,15 +370,20 @@ public class TextFragment extends Fragment {
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, items);
                             dropdown.setAdapter(adapter);
 
-                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                                    .setCancelable(false)
-                                    .setView(v).show();
+                            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                            alertDialog.setCancelable(false);
+                            alertDialog.setView(v);
+                            alertDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+                            alertDialog.getWindow().setBackgroundDrawable(null);
+                            alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                            alertDialog.show();
+
 
                             btSpeak.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    if(!etText.getText().equals("")) {
-                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH,null);
+                                    if (!etText.getText().equals("")) {
+                                        textToSpeech.speak(etText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
                                     }
                                 }
                             });

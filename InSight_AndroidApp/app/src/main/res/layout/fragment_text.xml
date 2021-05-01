@@ -20,48 +20,58 @@
 
     <ImageView
         android:id="@+id/preview_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/camera"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.camera.view.PreviewView
         android:id="@+id/camera"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:contentDescription="preview_area"
         android:importantForAccessibility="no"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></androidx.camera.view.PreviewView>
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/assistant"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/captureSpeech"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_marginEnd="20dp"
-        android:background="?selectableItemBackground"
-        android:src="@android:drawable/ic_btn_speak_now"
-        app:layout_constraintBottom_toBottomOf="@+id/camera"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:cardBackgroundColor="@color/colorPrimary"
+        app:cardCornerRadius="42dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/assistant"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:background="?selectableItemBackground"
+            android:src="@android:drawable/ic_btn_speak_now"
+            app:tint="#ffffff" />
+
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/textViewResults"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginHorizontal="10dp"
         android:ellipsize="end"
         android:maxLines="2"
-        android:text="TextView"
         android:textSize="15sp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toStartOf="@+id/assistant"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@+id/captureSpeech"
+        app:layout_constraintEnd_toStartOf="@+id/captureSpeech"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/captureSpeech" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
