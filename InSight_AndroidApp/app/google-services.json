@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "268576275561",
+    "project_id": "insight-a3592",
+    "storage_bucket": "insight-a3592.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268576275561:android:4158d148be21d105e7b6f8",
+        "android_client_info": {
+          "package_name": "com.example.hackfest2021_team_insight"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "268576275561-9eh1nhmdas9m1i50r2li3oda9fp13ror.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-6OhMmk27xJvvQeHu9zYfn1PUXBRBxDU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "268576275561-9eh1nhmdas9m1i50r2li3oda9fp13ror.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+
+
+        <item android:id="@+id/read"
+            android:icon="@drawable/ic_read"
+            android:title="Read"></item>
+
+        <item android:id="@+id/explore"
+            android:icon="@drawable/ic_explore"
+            android:title="Explore"></item>
+
+        <item android:id="@+id/navigation"
+            android:icon="@drawable/ic_navigation"
+            android:title="Navigation"></item>
+
+        <item android:id="@+id/bar_code"
+            android:icon="@drawable/ic_bar_code"
+            android:title="Bar-Code Scanner"></item>
+
+
+    </group>
+
+    <item android:id="@+id/recognition"
+        android:title="Recognition">
+
+        <menu>
+
+            <item android:id="@+id/face_recognition"
+                android:icon="@drawable/ic_face"
+                android:title="Face Recognition"></item>
+
+            <item android:id="@+id/currency_recognition"
+                android:icon="@drawable/ic_rupee"
+                android:title="Currency Recognition"></item>
+
+            <item android:id="@+id/color_recognition"
+            android:icon="@drawable/ic_color"
+            android:title="Color Recognition"></item>
+        </menu>
+
+    </item>
+
+    <item
+        android:title="Other Options">
+
+        <menu>
+
+            <item android:title="Settings"
+                android:icon="@drawable/ic_settings"
+                android:id="@+id/setting">
+            </item>
+
+            <item android:title="About the App"
+                android:icon="@drawable/ic_recognition"
+                android:id="@+id/about">
+            </item>
+
+        </menu>
+
+    </item>
+
+
+</menu>
