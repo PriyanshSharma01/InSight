@@ -8,18 +8,15 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -34,7 +31,6 @@ import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.extensions.HdrImageCaptureExtender;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -46,9 +42,10 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.hackfest2021_team_insight.R;
+import com.example.hackfest2021_team_insight.utilities.FileCompressor;
+import com.example.hackfest2021_team_insight.utilities.Helper;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -56,10 +53,7 @@ import com.google.firebase.storage.UploadTask;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -175,10 +169,18 @@ public class ExploreFragment extends Fragment {
         switch (requestCode) {
             case REQ_CODE: {
                 if ((resultCode == Activity.RESULT_OK) && (data != null)) {
-                    ArrayList result = data
+                    ArrayList results = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    textViewResults.setText((String) result.get(0));
-                    textToSpeech.speak(textViewResults.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+                    String output = (String) results.get(0);
+                    textViewResults.setText(output);
+                    if (output.contains("Explore the Object") || output.contains("details of the object") || output.contains("object")) {
+                        // start reading a page by taking its pick
+                        Helper.performClick(captureImage);
+                    } else if (output.contains("Explore the scene") || output.contains("scene") || output.contains("view details")) {
+                        // start reading a page by taking its pick
+                        Helper.performClick(captureImage1);
+                    } else
+                        Helper.speakOutText("Sorry I didn't understand!", textToSpeech);
                 }
                 break;
             }
@@ -273,8 +275,8 @@ public class ExploreFragment extends Fragment {
         captureImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
+                Helper.speakOutText("Please Wait I am Collecting the details of the object", textToSpeech);
+                String tempUri = getImageUri(getActivity(), mPreviewView.getBitmap()).toString();
                 previewImage.setVisibility(View.VISIBLE);
                 mPreviewView.setVisibility(View.GONE);
                 previewImage.setImageBitmap(mPreviewView.getBitmap());
@@ -282,19 +284,21 @@ public class ExploreFragment extends Fragment {
                 progressBar.setVisibility(View.VISIBLE);
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
-                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
+                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
 
-                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                FileCompressor fileCompressor = new FileCompressor();
+                photosRef.putFile(Uri.fromFile(fileCompressor.compressImage(tempUri, getContext())))
+                        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
-                            public void onSuccess(Uri uri) {
-                                imageURL = uri.toString();
-                                Log.d("IMAGE_URL", imageURL.toString());
-                                objectDetection(imageURL);
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        imageURL = uri.toString();
+                                        Log.d("IMAGE_URL", imageURL);
+                                        objectDetection(imageURL);
 
-                            }
+                                    }
                         });
                     }
                 });
@@ -304,7 +308,8 @@ public class ExploreFragment extends Fragment {
         captureImage1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri tempUri = getImageUri(getActivity(), mPreviewView.getBitmap());
+                Helper.speakOutText("Please Wait I am observing the view", textToSpeech);
+                String tempUri = getImageUri(getActivity(), mPreviewView.getBitmap()).toString();
                 previewImage.setVisibility(View.VISIBLE);
                 mPreviewView.setVisibility(View.GONE);
                 previewImage.setImageBitmap(mPreviewView.getBitmap());
@@ -312,19 +317,21 @@ public class ExploreFragment extends Fragment {
                 progressBar.setVisibility(View.VISIBLE);
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
-                final StorageReference photosRef = storage.getReference().child("photos/"+ new Random().nextInt());
+                final StorageReference photosRef = storage.getReference().child("photos/" + new Random().nextInt());
 
-                photosRef.putFile(tempUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                FileCompressor fileCompressor = new FileCompressor();
+                photosRef.putFile(Uri.fromFile(fileCompressor.compressImage(tempUri, getContext())))
+                        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
-                            public void onSuccess(Uri uri) {
-                                imageURL = uri.toString();
-                                Log.d("IMAGE_URL", imageURL.toString());
-                                    sceneDescription(imageURL);
-                            }
-                        });
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                photosRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        imageURL = uri.toString();
+                                        Log.d("IMAGE_URL", imageURL);
+                                        sceneDescription(imageURL);
+                                    }
+                                });
                     }
                 });
             }
